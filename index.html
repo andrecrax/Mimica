@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mímica de Bolso</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="screen" id="setupScreen" aria-labelledby="setupTitle">
+        <header class="app-header">
+          <div>
+            <p class="eyebrow">Jogo de mímica</p>
+            <h1 id="setupTitle">Mímica de Bolso</h1>
+          </div>
+          <span class="timer-badge">60s</span>
+        </header>
+
+        <form class="setup-grid" id="setupForm">
+          <section class="panel" aria-labelledby="gameOptionsTitle">
+            <div class="section-heading">
+              <h2 id="gameOptionsTitle">Partida</h2>
+            </div>
+
+            <div class="field-group">
+              <span class="field-label">Modo</span>
+              <div class="segmented-control mode-control" role="radiogroup" aria-label="Modo de jogo">
+                <label>
+                  <input type="radio" name="gameMode" value="classic" checked />
+                  <span>Cl&aacute;ssica</span>
+                </label>
+                <label>
+                  <input type="radio" name="gameMode" value="modified" />
+                  <span>M&iacute;mica modificada</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <span class="field-label">Equipes</span>
+              <div class="segmented-control" role="radiogroup" aria-label="Número de equipes">
+                <label>
+                  <input type="radio" name="teamCount" value="2" checked />
+                  <span>2</span>
+                </label>
+                <label>
+                  <input type="radio" name="teamCount" value="3" />
+                  <span>3</span>
+                </label>
+                <label>
+                  <input type="radio" name="teamCount" value="4" />
+                  <span>4</span>
+                </label>
+                <label>
+                  <input type="radio" name="teamCount" value="5" />
+                  <span>5</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <span class="field-label">Dificuldade</span>
+              <div class="segmented-control difficulty-control" role="radiogroup" aria-label="Dificuldade">
+                <label>
+                  <input type="radio" name="difficulty" value="facil" checked />
+                  <span>Fácil</span>
+                </label>
+                <label>
+                  <input type="radio" name="difficulty" value="medio" />
+                  <span>Média</span>
+                </label>
+                <label>
+                  <input type="radio" name="difficulty" value="dificil" />
+                  <span>Difícil</span>
+                </label>
+              </div>
+            </div>
+
+            <label class="number-field">
+              <span>Rodadas</span>
+              <input id="roundsInput" type="number" min="1" max="20" value="5" inputmode="numeric" />
+            </label>
+
+            <label class="switch-field">
+              <input id="teamNamesToggle" type="checkbox" />
+              <span class="switch-track" aria-hidden="true"><span></span></span>
+              <span>Usar nomes das equipes</span>
+            </label>
+          </section>
+
+          <section class="panel" aria-labelledby="teamsTitle">
+            <div class="section-heading">
+              <h2 id="teamsTitle">Equipes</h2>
+              <span id="teamCountPreview">2 cores</span>
+            </div>
+            <div class="team-setup-list" id="teamSetupList"></div>
+          </section>
+
+          <button class="primary-action full-action" type="submit">Começar jogo</button>
+        </form>
+      </section>
+
+      <section class="screen is-hidden" id="gameScreen" aria-labelledby="turnTitle">
+        <header class="game-header">
+          <button class="icon-action" id="backToSetupButton" type="button" aria-label="Voltar para configuração">
+            <span aria-hidden="true">‹</span>
+          </button>
+
+          <div class="turn-heading">
+            <p class="eyebrow" id="roundIndicator">Rodada 1 de 5</p>
+            <h1 id="turnTitle">Vez da equipe Azul</h1>
+          </div>
+
+          <button class="ghost-action" id="resetGameButton" type="button">Reiniciar</button>
+        </header>
+
+        <section class="score-strip" id="scoreStrip" aria-label="Placar"></section>
+
+        <section class="prompt-area" id="promptArea" aria-live="polite">
+          <div class="category-line">
+            <span id="categoryLabel">Animais</span>
+            <span id="difficultyLabel">Fácil</span>
+          </div>
+
+          <div class="word-stage">
+            <p id="wordText">Preparar</p>
+          </div>
+
+          <div class="timer-panel">
+            <output id="timerDisplay" aria-label="Tempo restante">60</output>
+            <span>segundos</span>
+          </div>
+
+          <div class="turn-actions">
+            <button class="primary-action" id="startTimerButton" type="button">Iniciar</button>
+            <button class="secondary-action" id="finishTurnButton" type="button" disabled>
+              Finalizar acerto
+            </button>
+          </div>
+        </section>
+
+        <section class="scoring-panel is-hidden" id="scoringPanel" aria-labelledby="scoringTitle">
+          <h2 id="scoringTitle">Pontuação</h2>
+          <div class="scoring-actions">
+            <button class="success-action" id="awardPointButton" type="button">+1 ponto</button>
+            <button class="secondary-action" id="noPointButton" type="button">Nenhum ponto</button>
+          </div>
+          <button class="primary-action full-action" id="nextWordButton" type="button" disabled>
+            Sortear nova palavra
+          </button>
+        </section>
+
+        <section class="end-panel is-hidden" id="endPanel" aria-labelledby="endTitle">
+          <p class="eyebrow">Resultado</p>
+          <h2 id="endTitle">Fim de jogo</h2>
+          <div class="ranking-list" id="rankingList"></div>
+          <div class="end-actions">
+            <button class="primary-action" id="playAgainButton" type="button">Jogar de novo</button>
+            <button class="secondary-action" id="newGameButton" type="button">Nova configuração</button>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="js/script.js"></script>
+  </body>
+</html>
