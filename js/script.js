@@ -111,8 +111,6 @@ const refs = {
   finishTurnButton: document.querySelector("#finishTurnButton"),
   scoringPanel: document.querySelector("#scoringPanel"),
   scoringTitle: document.querySelector("#scoringTitle"),
-  awardPointButton: document.querySelector("#awardPointButton"),
-  noPointButton: document.querySelector("#noPointButton"),
   nextWordButton: document.querySelector("#nextWordButton"),
   endPanel: document.querySelector("#endPanel"),
   rankingList: document.querySelector("#rankingList"),
@@ -130,8 +128,6 @@ refs.backToSetupButton.addEventListener("click", showSetup);
 refs.resetGameButton.addEventListener("click", restartCurrentGame);
 refs.startTimerButton.addEventListener("click", startTimer);
 refs.finishTurnButton.addEventListener("click", () => finishTurn("Acerto finalizado"));
-refs.awardPointButton.addEventListener("click", () => scoreTurn(true));
-refs.noPointButton.addEventListener("click", () => scoreTurn(false));
 refs.nextWordButton.addEventListener("click", goToNextTurn);
 refs.playAgainButton.addEventListener("click", restartCurrentGame);
 refs.newGameButton.addEventListener("click", showSetup);
@@ -144,6 +140,7 @@ renderTeamSetup();
 
 function startGame(event) {
   event.preventDefault();
+  const gameMode = getCheckedValue("gameMode");
   const teamCount = Number(getCheckedValue("teamCount"));
   const difficulty = getCheckedValue("difficulty");
   const rounds = clamp(Number(refs.roundsInput.value) || 5, 1, 20);
@@ -164,7 +161,7 @@ function startGame(event) {
   });
 
   game = {
-    config: { teamCount, difficulty, rounds, useNames },
+    config: { gameMode, teamCount, difficulty, rounds, useNames },
     teams,
     turnNumber: 1,
     totalTurns: teamCount * rounds,
@@ -237,8 +234,7 @@ function drawTurn() {
   refs.endPanel.classList.add("is-hidden");
   refs.startTimerButton.disabled = false;
   refs.finishTurnButton.disabled = true;
-  refs.awardPointButton.disabled = false;
-  refs.noPointButton.disabled = false;
+  
   refs.nextWordButton.disabled = true;
   refs.nextWordButton.textContent =
     game.turnNumber === game.totalTurns ? "Ver placar final" : "Sortear nova palavra";
@@ -295,21 +291,49 @@ function finishTurn(reason) {
   refs.scoringPanel.classList.remove("is-hidden");
   refs.scoringTitle.textContent = reason;
 
-  const team = getCurrentTeam();
-  refs.awardPointButton.textContent = `+1 para ${team.name}`;
-  refs.noPointButton.textContent = "Nenhum ponto";
+  const scoringActionsContainer = document.querySelector(".scoring-actions");
+  scoringActionsContainer.replaceChildren();
+
+  if (game.config.gameMode === "modified") {
+    game.teams.forEach((team, index) => {
+      const btn = document.createElement("button");
+      btn.className = "success-action";
+      btn.textContent = `+1 ${team.name}`;
+      btn.type = "button";
+      btn.addEventListener("click", () => scoreTurn(index));
+      scoringActionsContainer.append(btn);
+    });
+  } else {
+    const team = getCurrentTeam();
+    const btn = document.createElement("button");
+    btn.className = "success-action";
+    btn.textContent = `+1 para ${team.name}`;
+    btn.type = "button";
+    btn.addEventListener("click", () => scoreTurn(getCurrentTeamIndex()));
+    scoringActionsContainer.append(btn);
+  }
+
+  const noPointBtn = document.createElement("button");
+  noPointBtn.className = "secondary-action";
+  noPointBtn.textContent = "Nenhum ponto";
+  noPointBtn.type = "button";
+  noPointBtn.addEventListener("click", () => scoreTurn(null));
+  
+  scoringActionsContainer.append(noPointBtn);
 }
 
-function scoreTurn(shouldAwardPoint) {
+function scoreTurn(teamIndex) {
   if (!game || game.phase !== "scoring" || game.scoredThisTurn) return;
 
-  if (shouldAwardPoint) {
-    getCurrentTeam().score += 1;
+  if (teamIndex !== null) {
+    game.teams[teamIndex].score += 1;
   }
 
   game.scoredThisTurn = true;
-  refs.awardPointButton.disabled = true;
-  refs.noPointButton.disabled = true;
+
+  const scoringBtns = document.querySelectorAll(".scoring-actions button");
+  scoringBtns.forEach((btn) => (btn.disabled = true));
+
   refs.nextWordButton.disabled = false;
   renderScores();
 }
